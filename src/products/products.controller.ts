@@ -36,8 +36,8 @@ export class ProductsController {
   }
 
   @Get('/api/products/:id')
-  public getOneProduct(@Param('id', ParseIntPipe) id: string) {
-    const product = this.products.find((p) => p.id === parseInt(id));
+  public getOneProduct(@Param('id', ParseIntPipe) id: number) {
+    const product = this.products.find((p) => p.id === id);
     if (!product) throw new NotFoundException('product not found');
     return product;
   }
