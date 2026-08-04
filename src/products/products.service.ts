@@ -1,42 +1,60 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateProductDto } from '../dto/create-product.dto';
-import { UpdateProductDto } from '../dto/update-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-type ProductType = { id: number; title: string; price: number };
+import { Product } from './product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
-  private products: ProductType[] = [
-    { id: 1, title: 'laptop', price: 323 },
-    { id: 2, title: 'phone', price: 1000 },
-  ];
+  constructor(
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+  ) {}
 
-  public getAllProducts() {
-    return this.products;
+  async getAllProducts(): Promise<Product[]> {
+    return this.productRepository.find();
   }
 
-  public createNewProduct(body: CreateProductDto) {
-    const newProduct: ProductType = {
-      id: this.products.length + 1,
-      title: body.title,
-      price: body.price,
-    };
-    this.products.push(newProduct);
-    return newProduct;
+  async createNewProduct(body: CreateProductDto): Promise<Product> {
+    const product = this.productRepository.create(body);
+    return this.productRepository.save(product);
   }
 
-  public getOneProduct(id: number) {
-    const product = this.products.find((p) => p.id === id);
-    if (!product) throw new NotFoundException('product not found');
+  async getOneProduct(id: number): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { id },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
     return product;
   }
 
-  public updateProduct(id: string, body: UpdateProductDto) {
-    const product = this.products.find((p) => p.id === parseInt(id));
-    if (!product) throw new NotFoundException('product not found');
+  async updateProduct(id: number, body: UpdateProductDto): Promise<Product> {
+    // .preload() maps the incoming data to the entity, finding it by ID first.
+    // It returns undefined if the entity with the given ID does not exist.
+    const product = await this.productRepository.preload({
+      id,
+      ...body,
+    });
 
-    // const updatedProduct: ProductType = {
-    //   title: body.title,
-    //   price: body.price,
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    return this.productRepository.save(product);
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    // .delete() is faster than .remove() as it doesn't require fetching the entity first
+    const result = await this.productRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
   }
 }
