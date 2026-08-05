@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -32,15 +31,13 @@ export class ProductsController {
   }
 
   @Get(':id')
-  public async getOneProduct(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Product> {
+  public async getOneProduct(@Param('id') id: number): Promise<Product> {
     return this.productService.getOneProduct(id);
   }
 
   @Put(':id')
   public async updateProduct(
-    @Param('id', ParseIntPipe) id: number, // Ensured ParseIntPipe is used here
+    @Param('id') id: number, // Ensured ParseIntPipe is used here
     @Body() body: UpdateProductDto,
   ): Promise<Product> {
     return this.productService.updateProduct(id, body);
@@ -48,9 +45,7 @@ export class ProductsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT) // 204 is the standard success code for DELETE without a response body
-  public async deleteProduct(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<void> {
+  public async deleteProduct(@Param('id') id: number): Promise<void> {
     return this.productService.deleteProduct(id);
   }
 }
