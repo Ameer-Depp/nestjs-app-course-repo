@@ -1,49 +1,43 @@
-// product.entity.ts
+// review.entity.ts
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { CURRENT_TIMESTAMP } from '../../utils/constants';
-import { Review } from '../reviews/review.entity';
+import { Product } from '../products/product.entity';
 import { User } from '../users/user.entity';
 
-@Entity({ name: 'products' })
-export class Product {
+@Entity({ name: 'reviews' })
+export class Review {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column({
-    type: 'varchar',
-    length: 100,
+    type: 'int',
   })
-  title!: string;
+  rating!: number;
 
   @Column({
     type: 'varchar',
     length: 1000,
   })
-  description!: string;
+  comment!: string;
 
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
+  @ManyToOne(() => Product, (product) => product.reviews, {
+    onDelete: 'CASCADE',
+    nullable: false,
   })
-  price!: number;
+  product!: Product;
 
-  @ManyToOne(() => User, (user) => user.products, {
+  @ManyToOne(() => User, (user) => user.reviews, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   user!: User;
-
-  @OneToMany(() => Review, (review) => review.product)
-  reviews!: Review[];
 
   @UpdateDateColumn({
     type: 'timestamp',

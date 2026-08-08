@@ -6,6 +6,8 @@ import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { Product } from './products/product.entity';
+import { User } from './users/user.entity';
+import { Review } from './reviews/review.entity';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { Product } from './products/product.entity';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         synchronize: process.env.NODE_ENV !== 'production', // Disable in production
-        entities: [Product],
+        entities: [Product, User, Review],
       }),
     }),
 
