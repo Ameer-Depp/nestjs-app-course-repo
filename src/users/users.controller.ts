@@ -10,13 +10,13 @@ export class UsersController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() dto: RegisterDto) {
-    return this.usersService.register(dto);
+  async register(@Body() dto: RegisterDto) {
+    return await this.usersService.register(dto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto) {
-    return this.usersService.login(dto);
+  async login(@Body() dto: LoginDto) {
+    return await this.usersService.login(dto);
   }
 }
