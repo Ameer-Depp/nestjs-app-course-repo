@@ -5,10 +5,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -20,6 +23,7 @@ import type { JWTPayloadType } from '../../utils/types';
 import { Roles } from './decorators/user-role.decorator';
 import { UserType } from '../../utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
+import { UpdateUserDTO } from './dtos/update-user.dto';
 
 @Controller('api/users')
 export class UsersController {
@@ -48,5 +52,26 @@ export class UsersController {
   @UseGuards(AuthRolesGuard)
   public getAllUsers() {
     return this.usersService.getAllUsers();
+  }
+
+  @Put(':id')
+  @Roles(UserType.ADMIN, UserType.USER)
+  @UseGuards(AuthRolesGuard)
+  public updateUser(
+    @CurrentUser() payload: JWTPayloadType,
+    @Param('id') targetId: number,
+    @Body() body: UpdateUserDTO,
+  ) {
+    return this.usersService.updateUser(payload, targetId, body);
+  }
+
+  @Delete(':id')
+  @Roles(UserType.ADMIN, UserType.USER)
+  @UseGuards(AuthRolesGuard)
+  public deleteUser(
+    @CurrentUser() payload: JWTPayloadType,
+    @Param('id') targetId: number,
+  ) {
+    return this.usersService.deleteUser(payload, targetId);
   }
 }

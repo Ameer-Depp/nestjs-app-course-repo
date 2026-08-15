@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,6 +16,8 @@ import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokenType, JWTPayloadType } from '../../utils/types';
+import { UpdateUserDTO } from './dtos/update-user.dto';
+import { UserType } from '../../utils/enums';
 
 @Injectable()
 export class UsersService {
@@ -85,6 +89,62 @@ export class UsersService {
     if (!user) throw new NotFoundException('user not found');
 
     return user;
+  }
+
+  public async updateUser(
+    currentUser: JWTPayloadType,
+    targetId: number,
+    dto: UpdateUserDTO,
+  ) {
+    if (
+      currentUser.userType !== UserType.ADMIN &&
+      currentUser.id !== targetId
+    ) {
+      throw new ForbiddenException('You can only update your own account');
+    }
+
+    const { password, username } = dto;
+    const user = await this.userRepository.findOne({ where: { id: targetId } });
+    if (!user) throw new NotFoundException('user is not found');
+
+    user.username = username ?? user.username;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    const existingUserName = await this.userRepository.findOne({
+      where: { username: user.username },
+    });
+
+    if (username) {
+      const existingUserName = await this.userRepository.findOne({
+        where: { username },
+      });
+
+      if (existingUserName && existingUserName.id !== targetId) {
+        throw new BadRequestException('this username already exists');
+      }
+
+      user.username = username;
+    }
+    return this.userRepository.save(user);
+  }
+
+  public async deleteUser(currentUser: JWTPayloadType, targetId: number) {
+    if (
+      currentUser.userType !== UserType.ADMIN &&
+      currentUser.id !== targetId
+    ) {
+      throw new ForbiddenException('You can only delete your own account');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: targetId } });
+    if (!user) throw new NotFoundException('user is not found');
+
+    await this.userRepository.remove(user);
+
+    return { message: 'user deleted successfully' };
   }
 
   private generateJwt(payload: JWTPayloadType) {
