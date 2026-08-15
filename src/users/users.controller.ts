@@ -1,8 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 // users.controller.ts
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
+import { AuthGuard } from './guards/auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { JWTPayloadType } from '../../utils/types';
 
 @Controller('api/users')
 export class UsersController {
@@ -18,5 +32,11 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
     return await this.usersService.login(dto);
+  }
+
+  @Get('current-user')
+  @UseGuards(AuthGuard)
+  public getCurrentUser(@CurrentUser() payload: JWTPayloadType) {
+    return this.usersService.getCurrentUser(payload.id);
   }
 }

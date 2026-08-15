@@ -1,4 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -41,6 +48,7 @@ export class UsersService {
       newUser = await this.userRepository.save(newUser);
     } catch (err: any) {
       // Fallback safety net for race conditions (two requests at once)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (err.code === '23505') {
         throw new BadRequestException('username or email already exists');
       }
@@ -68,6 +76,15 @@ export class UsersService {
       userType: user.userType,
     });
     return { accessToken };
+  }
+
+  public async getCurrentUser(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+    });
+    if (!user) throw new NotFoundException('user not found');
+
+    return user;
   }
 
   private generateJwt(payload: JWTPayloadType) {
