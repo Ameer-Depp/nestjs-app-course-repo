@@ -90,4 +90,8 @@ export class UsersService {
   private generateJwt(payload: JWTPayloadType) {
     return this.jwtService.signAsync(payload);
   }
+
+  public getAllUsers(): Promise<User[]> {
+    return this.userRepository.find();
+  }
 }

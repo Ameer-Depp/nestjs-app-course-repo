@@ -17,6 +17,9 @@ import { RegisterDto } from './dtos/register.dto';
 import { AuthGuard } from './guards/auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { JWTPayloadType } from '../../utils/types';
+import { Roles } from './decorators/user-role.decorator';
+import { UserType } from '../../utils/enums';
+import { AuthRolesGuard } from './guards/auth-roles.guard';
 
 @Controller('api/users')
 export class UsersController {
@@ -38,5 +41,12 @@ export class UsersController {
   @UseGuards(AuthGuard)
   public getCurrentUser(@CurrentUser() payload: JWTPayloadType) {
     return this.usersService.getCurrentUser(payload.id);
+  }
+
+  @Get()
+  @Roles(UserType.ADMIN)
+  @UseGuards(AuthRolesGuard)
+  public getAllUsers() {
+    return this.usersService.getAllUsers();
   }
 }
