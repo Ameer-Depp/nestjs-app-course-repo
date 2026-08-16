@@ -12,6 +12,7 @@ import { CURRENT_TIMESTAMP } from '../../utils/constants';
 import { Product } from '../products/product.entity';
 import { Review } from '../reviews/review.entity';
 import { UserType } from '../../utils/enums';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 export class User {
@@ -39,6 +40,7 @@ export class User {
     length: 255,
     select: true, // never returned by default queries
   })
+  @Exclude()
   password!: string;
 
   @Column({
