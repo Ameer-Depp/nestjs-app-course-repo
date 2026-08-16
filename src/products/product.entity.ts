@@ -39,10 +39,11 @@ export class Product {
   @ManyToOne(() => User, (user) => user.products, {
     onDelete: 'CASCADE',
     nullable: false,
+    eager: true,
   })
   user!: User;
 
-  @OneToMany(() => Review, (review) => review.product)
+  @OneToMany(() => Review, (review) => review.product, { eager: true })
   reviews!: Review[];
 
   @UpdateDateColumn({
