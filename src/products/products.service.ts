@@ -22,7 +22,17 @@ export class ProductsService {
   ): Promise<Product[]> {
     const query = this.productRepository
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.user', 'user'); // <-- bring the creator back
+      .leftJoinAndSelect('product.user', 'user')
+      .leftJoinAndSelect('product.reviews', 'reviews')
+      .leftJoinAndSelect('reviews.user', 'reviewUser') // who wrote each review
+      .select([
+        'product',
+        'user.id',
+        'user.username',
+        'reviews',
+        'reviewUser.id',
+        'reviewUser.username',
+      ]);
 
     if (title) {
       query.andWhere('product.title ILIKE :title', { title: `%${title}%` });

@@ -36,6 +36,7 @@ export class Review {
   @ManyToOne(() => User, (user) => user.reviews, {
     onDelete: 'CASCADE',
     nullable: false,
+    eager: true,
   })
   user!: User;
 
