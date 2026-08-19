@@ -63,6 +63,9 @@ export class User {
   @OneToMany(() => Review, (review) => review.user)
   reviews!: Review[];
 
+  @Column({ type: 'varchar', nullable: true, default: null })
+  profileImage!: string | null;
+
   @UpdateDateColumn({
     type: 'timestamp',
     default: () => CURRENT_TIMESTAMP,

@@ -18,6 +18,8 @@ import { JwtService } from '@nestjs/jwt';
 import { AccessTokenType, JWTPayloadType } from '../../utils/types';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { UserType } from '../../utils/enums';
+import { unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
@@ -153,5 +155,49 @@ export class UsersService {
 
   public getAllUsers(): Promise<User[]> {
     return this.userRepository.find();
+  }
+
+  /**
+   * upload user profile Image
+   * @param userId
+   * @param userProfileImage
+   * @returns user data from the user table
+   */
+  public async uploadUserProfileImage(
+    userId: number,
+    userProfileImage: string,
+  ) {
+    const user = await this.getCurrentUser(userId);
+    if (user.profileImage === null) {
+      user.profileImage = userProfileImage;
+    } else {
+      await this.removeProfileImage(userId);
+      user.profileImage = userProfileImage;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return this.userRepository.save(user);
+  }
+
+  /**
+   * DELETE USER PROFILE IMAGE
+   * @param userId
+   * @returns nothing
+   */
+  public async removeProfileImage(userId: number) {
+    const user = await this.getCurrentUser(userId);
+    if (user.profileImage === null) {
+      throw new BadRequestException('there is not profile image');
+    }
+
+    const imagePath = join(
+      process.cwd(),
+      `./images/users/${user.profileImage}`,
+    );
+    unlinkSync(imagePath);
+
+    user.profileImage = null;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return this.userRepository.save(user);
   }
 }

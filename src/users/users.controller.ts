@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 // users.controller.ts
@@ -13,6 +14,11 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
+  Res,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { LoginDto } from './dtos/login.dto';
@@ -24,6 +30,8 @@ import { Roles } from './decorators/user-role.decorator';
 import { UserType } from '../../utils/enums';
 import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDTO } from './dtos/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 
 @Controller('api/users')
 export class UsersController {
@@ -73,5 +81,29 @@ export class UsersController {
     @Param('id') targetId: number,
   ) {
     return this.usersService.deleteUser(payload, targetId);
+  }
+
+  @Post('profile-image')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('profile-image'))
+  public uploadProfileImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
+  ) {
+    if (!file) throw new BadRequestException('no image provided');
+    return this.usersService.uploadUserProfileImage(req.user.id, file.filename);
+  }
+
+  @Delete('profile-image/delete')
+  @UseGuards(AuthGuard)
+  public removeUserProfileImage(@Request() req: any) {
+    return this.usersService.removeProfileImage(req.user.id);
+  }
+
+  // GET: ~/api/users/images/:image
+  @Get('profile-image/:image')
+  @UseGuards(AuthGuard)
+  public showProfileImage(@Param('image') image: string, @Res() res: Response) {
+    return res.sendFile(image, { root: 'images/users' });
   }
 }
