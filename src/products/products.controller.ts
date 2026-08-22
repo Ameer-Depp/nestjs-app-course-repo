@@ -20,14 +20,28 @@ import { UserType } from '../../utils/enums';
 import { AuthRolesGuard } from '../users/guards/auth-roles.guard';
 import { CurrentUser } from '../users/decorators/current-user.decorator';
 import * as types from '../../utils/types';
+import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
 
 @Controller('api/products')
 export class ProductsController {
   constructor(private readonly productService: ProductsService) {}
 
   @Get()
+  @ApiQuery({
+    name: 'title',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'minPrice',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'maxPrice',
+    required: false,
+  })
   public async getAllProducts(
-    @Query('title') title: string,
+    @Query('title')
+    title: string,
     @Query('minPrice') minPrice: number,
     @Query('maxPrice') maxPrice: number,
   ): Promise<Product[]> {
@@ -37,6 +51,7 @@ export class ProductsController {
   @Post()
   @UseGuards(AuthRolesGuard)
   @Roles(UserType.ADMIN)
+  @ApiSecurity('bearer')
   public async createNewProduct(
     @Body() body: CreateProductDto,
     @CurrentUser() payload: types.JWTPayloadType,

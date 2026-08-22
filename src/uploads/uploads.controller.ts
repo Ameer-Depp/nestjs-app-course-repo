@@ -15,6 +15,7 @@ import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import type { Response } from 'express'; // 👈 Import Response from express
 import { SingleFileUploadDTO } from './dto/single-file.dto';
 import { MultipleFilesUploadDTO } from './dto/file-upload.dto';
+import { ImageUploadingDto } from '../users/dtos/image-uploading.dto';
 
 @Controller('api/uploads')
 export class UploadController {
@@ -40,6 +41,7 @@ export class UploadController {
   @Post('multiple-files')
   @UseInterceptors(FilesInterceptor('files')) // Expects field name "files"
   @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: ImageUploadingDto, description: 'upload multi files' })
   @ApiBody({
     type: MultipleFilesUploadDTO, // 👈 Use multiple files DTO
     description: 'Upload multiple files at once',

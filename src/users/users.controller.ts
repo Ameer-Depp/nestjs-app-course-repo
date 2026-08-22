@@ -32,6 +32,8 @@ import { AuthRolesGuard } from './guards/auth-roles.guard';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
+import { ApiBody, ApiConsumes, ApiSecurity } from '@nestjs/swagger';
+import { ImageUploadingDto } from './dtos/image-uploading.dto';
 
 @Controller('api/users')
 export class UsersController {
@@ -86,6 +88,9 @@ export class UsersController {
   @Post('profile-image')
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('profile-image'))
+  @ApiSecurity('bearer')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: ImageUploadingDto, description: 'upload multi files' })
   public uploadProfileImage(
     @UploadedFile() file: Express.Multer.File,
     @Request() req: any,
