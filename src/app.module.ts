@@ -13,10 +13,11 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { Product } from './products/product.entity';
 import { User } from './users/user.entity';
 import { Review } from './reviews/review.entity';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { UploadModule } from './uploads/uploads.module';
 import { UsersModule } from './users/users.module';
 import { LoggerMiddleware } from '../utils/middlewares/logger.middleware';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -38,6 +39,12 @@ import { LoggerMiddleware } from '../utils/middlewares/logger.middleware';
         entities: [Product, User, Review],
       }),
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 1000 * 10, // 10 seconds
+        limit: 3,
+      },
+    ]),
 
     ProductsModule,
     UsersModule,
@@ -48,6 +55,10 @@ import { LoggerMiddleware } from '../utils/middlewares/logger.middleware';
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
